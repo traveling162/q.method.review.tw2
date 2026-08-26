@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陳述句．專家審查系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F3EC;
+    --paper-raised:#FDFBF6;
+    --ink:#20262E;
+    --ink-soft:#5C6570;
+    --ink-faint:#9AA1A9;
+    --line:#DCD5C4;
+    --line-strong:#C7BEA8;
+    --red:#A93F2B;
+    --red-soft:#F1DFD8;
+    --teal:#2E6459;
+    --teal-soft:#DCE9E4;
+    --amber:#8A6A1F;
+    --amber-soft:#EFE3C4;
+    --radius:3px;
+    --shadow:0 1px 2px rgba(32,38,46,0.06), 0 6px 20px rgba(32,38,46,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--red-soft);}
+
+  /* ---------- Utility ---------- */
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .serif{font-family:'Source Serif 4',serif;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+
+  /* ---------- Login Screen ---------- */
+  #loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    position:relative;
+    overflow:hidden;
+  }
+  #loginScreen::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--line) 28px);
+    opacity:0.35;
+    pointer-events:none;
+  }
+  .login-card{
+    position:relative;
+    background:var(--paper-raised);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:48px 44px 40px;
+    max-width:460px;
+    width:100%;
+    box-shadow:var(--shadow);
+  }
+  .login-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:28px;
+    width:1px; height:100%;
+    background:var(--red-soft);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--red);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px;height:1px;
+    background:var(--red);
+    display:inline-block;
+  }
+  .login-card h1{
+    font-family:'Source Serif 4',serif;
+    font-size:29px;
+    font-weight:600;
+    line-height:1.3;
+    margin:0 0 10px;
+  }
+  .login-card p{
+    color:var(--ink-soft);
+    font-size:16px;
+    line-height:1.7;
+    margin:0 0 28px;
+  }
+  .field-label{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    display:block;
+    font-weight:500;
+  }
+  #expertNameInput{
+    width:100%;
+    padding:13px 14px;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    background:#fff;
+    font-size:17px;
+    font-family:'Source Serif 4',serif;
+    color:var(--ink);
+    margin-bottom:22px;
+  }
+  #expertNameInput:focus{outline:2px solid var(--teal); outline-offset:1px;}
+  .btn-primary{
+    width:100%;
+    padding:14px;
+    background:var(--ink);
+    color:var(--paper-raised);
+    border:none;
+    border-radius:var(--radius);
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:background .15s ease;
+  }
+  .btn-primary:hover{background:var(--red);}
+  .btn-primary:disabled{background:var(--ink-faint); cursor:not-allowed;}
+
+  /* ---------- App Shell ---------- */
+  #appScreen{display:none;}
+  header.topbar{
+    position:sticky; top:0; z-index:20;
+    background:rgba(246,243,236,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line-strong);
+    padding:14px 28px 0;
+  }
+  .topbar-inner{
+    max-width:1240px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    padding-bottom:12px;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:28px;height:28px;
+    border:1.5px solid var(--ink);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Source Serif 4',serif;
+    font-size:14px;font-weight:700;
+    flex-shrink:0;
+  }
+  .brand-text{font-size:15px; color:var(--ink-soft);}
+  .brand-text strong{color:var(--ink); font-weight:600;}
+  .expert-badge{
+    font-size:14px;
+    color:var(--ink-soft);
+    display:flex;align-items:center;gap:6px;
+  }
+  .expert-badge strong{color:var(--ink); font-weight:600;}
+
+  /* ---------- Sticky Progress Bar ---------- */
+  .progress-wrap{
+    max-width:1240px;
+    margin:0 auto;
+    padding-bottom:12px;
+  }
+  .progress-meta{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .progress-meta .progress-label{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .progress-meta .progress-count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--ink);
+    font-weight:600;
+  }
+  .progress-track{
+    width:100%;
+    height:10px;
+    background:var(--line);
+    border:1px solid var(--line-strong);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--teal) 0%, #3E8072 100%);
+    border-radius:999px;
+    transition:width .3s ease;
+  }
+  .progress-fill.is-full{
+    background:linear-gradient(90deg, var(--teal) 0%, #2E6459 100%);
+  }
+
+  .stats-bar{
+    max-width:1240px;
+    margin:0 auto;
+    padding:18px 28px 0;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--line-strong);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .stat{
+    background:var(--paper-raised);
+    padding:14px 16px;
+    text-align:left;
+  }
+  .stat .num{
+    font-family:'Source Serif 4',serif;
+    font-size:27px;
+    font-weight:600;
+    line-height:1;
+  }
+  .stat .lbl{
+    font-size:12px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin-top:6px;
+  }
+  .stat.pct .num{color:var(--teal);}
+
+  main{
+    max-width:1240px;
+    margin:0 auto;
+    padding:26px 28px 100px;
+  }
+
+  .intro-panel{
+    background:var(--paper-raised);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:26px 28px;
+    margin-bottom:32px;
+  }
+  .intro-panel h2{
+    font-family:'Source Serif 4',serif;
+    font-size:21px;
+    margin:0 0 10px;
+  }
+  .intro-panel p{
+    font-size:15.5px;
+    line-height:1.85;
+    color:var(--ink-soft);
+    margin:0 0 20px;
+  }
+  .greeting-text{
+    font-family:'Source Serif 4',serif;
+    font-size:16.5px;
+    line-height:2;
+    color:var(--ink);
+    padding-bottom:20px;
+    margin-bottom:20px !important;
+    border-bottom:1px solid var(--line);
+  }
+  .steps-heading{
+    font-size:18px !important;
+    margin-bottom:10px !important;
+    color:var(--ink-soft);
+  }
+  .steps{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;
+  }
+  .step{font-size:14px; color:var(--ink-soft); line-height:1.6;}
+  .step .step-num{
+    font-family:'Source Serif 4',serif;
+    font-size:19px;
+    color:var(--red);
+    font-weight:600;
+    display:block;
+    margin-bottom:4px;
+  }
+  .step strong{display:block; color:var(--ink); font-weight:600; margin-bottom:2px;}
+
+  /* ---------- Statement Card ---------- */
+  #cardList{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(290px, 1fr));
+    gap:14px;
+  }
+  .group-divider{
+  grid-column:1 / -1;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:22px 0 2px;
+}
+.group-divider:first-child{margin-top:0;}
+.group-divider .line{
+  flex:1;
+  height:1px;
+  background:var(--line-strong);
+}
+.group-divider .label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.08em;
+  color:var(--ink-faint);
+  white-space:nowrap;
+}
+  .card{
+    background:var(--paper-raised);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    margin-bottom:0;
+    padding:16px 18px 18px;
+    position:relative;
+    transition:border-color .15s ease;
+    display:flex;
+    flex-direction:column;
+  }
+  .card.is-complete{border-left:3px solid var(--teal);}
+  .card.is-pending{border-left:3px solid var(--line-strong);}
+
+  .card-head{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .card-index{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--ink-faint);
+    padding-top:3px;
+    flex-shrink:0;
+    min-width:22px;
+  }
+  .card-text{
+    font-family:'Source Serif 4',serif;
+    font-size:16.5px;
+    line-height:1.55;
+    color:var(--ink);
+  }
+
+  .row-label{
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-faint);
+    margin-bottom:7px;
+    display:block;
+  }
+  .field-block{margin-bottom:13px;}
+  .field-block:last-child{margin-bottom:0;}
+
+  /* nature pills */
+  .pill-group{display:flex; gap:6px;}
+  .pill{
+    flex:1;
+    padding:8px 3px;
+    text-align:center;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    background:transparent;
+    font-size:14px;
+    color:var(--ink-soft);
+    transition:all .12s ease;
+  }
+  .pill:hover{border-color:var(--ink-soft);}
+  .pill.active[data-val="positive"]{background:var(--teal-soft); border-color:var(--teal); color:var(--teal); font-weight:600;}
+  .pill.active[data-val="negative"]{background:var(--red-soft); border-color:var(--red); color:var(--red); font-weight:600;}
+  .pill.active[data-val="neutral"]{background:var(--amber-soft); border-color:var(--amber); color:var(--amber); font-weight:600;}
+
+  /* necessity dial */
+  .necessity-scale{
+    display:flex;
+    align-items:center;
+    gap:0;
+    position:relative;
+  }
+  .necessity-scale .track{
+    position:absolute;
+    top:9px; left:9px; right:9px;
+    height:1px;
+    background:var(--line-strong);
+    z-index:0;
+  }
+  .necessity-dot-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    position:relative;
+    z-index:1;
+  }
+  .necessity-dot{
+    width:19px; height:19px;
+    border-radius:50%;
+    border:1.5px solid var(--line-strong);
+    background:var(--paper-raised);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-faint);
+    transition:all .12s ease;
+  }
+  .necessity-dot-wrap:hover .necessity-dot{border-color:var(--ink-soft); color:var(--ink-soft);}
+  .necessity-dot-wrap.active .necessity-dot{
+    background:var(--red);
+    border-color:var(--red);
+    color:#fff;
+    transform:scale(1.12);
+  }
+  .necessity-tag{display:none;}
+
+  /* no-edit checkbox */
+  .noedit-row{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 11px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    cursor:pointer;
+  }
+  .noedit-row input{width:17px;height:17px; accent-color:var(--teal); flex-shrink:0;}
+  .noedit-row span{font-size:14px; color:var(--ink-soft);}
+  .noedit-row.checked{background:var(--teal-soft); border-color:var(--teal);}
+  .noedit-row.checked span{color:var(--teal); font-weight:600;}
+
+  textarea.remark{
+    width:100%;
+    min-height:60px;
+    padding:9px 11px;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    resize:vertical;
+    background:#fff;
+  }
+  textarea.remark:focus{outline:2px solid var(--teal); outline-offset:1px;}
+  textarea.remark::placeholder{color:var(--ink-faint);}
+  textarea.remark:disabled{background:var(--paper); color:var(--ink-faint);}
+
+  /* ---------- Footer / Export ---------- */
+  .export-bar{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    background:rgba(246,243,236,0.95);
+    backdrop-filter:blur(6px);
+    border-top:1px solid var(--line-strong);
+    padding:14px 28px;
+    display:flex;
+    justify-content:center;
+    z-index:15;
+  }
+  .export-bar-inner{
+    max-width:1240px;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+  }
+  .export-hint{font-size:14px; color:var(--ink-soft); transition:color .15s ease;}
+  .export-hint.is-error{color:var(--red); font-weight:600;}
+  @keyframes flashIncomplete{
+    0%,100%{box-shadow:none;}
+    50%{box-shadow:0 0 0 3px var(--red-soft);}
+  }
+  .card.flash-incomplete{
+    animation:flashIncomplete 0.7s ease-in-out 2;
+    border-left-color:var(--red) !important;
+  }
+  .btn-export{
+    padding:12px 26px;
+    background:var(--ink);
+    color:var(--paper-raised);
+    border:none;
+    border-radius:var(--radius);
+    font-size:15px;
+    font-weight:600;
+    display:flex; align-items:center; gap:8px;
+  }
+  .btn-export:hover{background:var(--red);}
+  .btn-export:disabled{background:var(--ink-faint); cursor:not-allowed;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(32,38,46,0.55);
+    z-index:50;
+    align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-box{
+    background:var(--paper-raised);
+    border-radius:var(--radius);
+    max-width:460px; width:100%;
+    padding:34px 30px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal-box .check-icon{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--teal-soft);
+    color:var(--teal);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    margin-bottom:16px;
+  }
+  .modal-box .check-icon.is-warn{
+    background:var(--amber-soft);
+    color:var(--amber);
+  }
+  .modal-box h3{
+    font-family:'Source Serif 4',serif;
+    font-size:21px;
+    margin:0 0 10px;
+  }
+  .modal-box p{font-size:15px; color:var(--ink-soft); line-height:1.75; margin:0 0 18px;}
+  .email-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--paper);
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    padding:10px 14px;
+    margin-bottom:18px;
+  }
+  .email-row span{font-family:'JetBrains Mono',monospace; font-size:14px;}
+  .email-row button{
+    background:none; border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    font-size:12.5px; padding:5px 10px;
+    color:var(--ink-soft);
+  }
+  .email-row button:hover{border-color:var(--ink);}
+  .modal-steps{margin:0 0 22px; padding-left:0; list-style:none;}
+  .modal-steps li{
+    font-size:14px; color:var(--ink-soft);
+    display:flex; gap:10px; margin-bottom:8px;
+    align-items:flex-start;
+  }
+  .modal-steps li .n{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--red); flex-shrink:0;
+  }
+  .modal-ack{
+    font-size:12.5px;
+    color:var(--ink-faint);
+    line-height:1.6;
+    margin:0 0 18px;
+  }
+  .modal-actions{display:flex; flex-direction:column; gap:10px;}
+  .btn-mailto{
+    text-align:center;
+    padding:12px;
+    background:var(--ink);
+    color:var(--paper-raised);
+    border-radius:var(--radius);
+    font-size:14.5px; font-weight:600;
+    text-decoration:none;
+  }
+  .btn-mailto:hover{background:var(--red);}
+  .btn-close-modal{
+    text-align:center;
+    padding:12px;
+    background:none;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    font-size:14.5px;
+    color:var(--ink-soft);
+  }
+  .btn-close-modal:hover{border-color:var(--ink);}
+
+  @media (max-width:640px){
+    .steps{grid-template-columns:repeat(2,1fr);}
+    .stats-bar{grid-template-columns:repeat(2,1fr);}
+    .necessity-tag{display:none;}
+    main{padding:22px 16px 110px;}
+    .topbar{padding:14px 16px 0;}
+    .stats-bar{padding:16px 16px 0;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+
+  :focus-visible{outline:2px solid var(--teal); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="eyebrow">DELPHI EXPERT REVIEW</div>
+    <h1>陳述句．專家審查系統</h1>
+    <p>請輸入您的姓名以進入審查系統。您的姓名將自動標記在每筆回答上，方便研究者彙整各位專家的意見。</p>
+    <label class="field-label" for="expertNameInput">您的姓名</label>
+    <input type="text" id="expertNameInput" placeholder="例如：王小明" autocomplete="off">
+    <button class="btn-primary" id="loginBtn">確認進入系統 →</button>
+  </div>
+</div>
+
+<!-- ============ APP SCREEN ============ -->
+<div id="appScreen">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">Q</div>
+        <div class="brand-text"><strong>陳述句．專家審查系統</strong></div>
+      </div>
+      <div class="expert-badge">審查專家：<strong id="expertNameDisplay"></strong></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="progress-label">審查進度</span>
+        <span class="progress-count mono" id="progressCount">0 / 0</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">總陳述句</div></div>
+    <div class="stat"><div class="num" id="statRated">0</div><div class="lbl">已評分</div></div>
+    <div class="stat"><div class="num" id="statPending">0</div><div class="lbl">待評分</div></div>
+    <div class="stat pct"><div class="num" id="statPct">0%</div><div class="lbl">完成度</div></div>
+  </div>
+
+  <main>
+    <section class="intro-panel">
+      <h2>計畫說明</h2>
+      <p class="greeting-text">各位專家好，<br><br>
+      感謝您參與「國科會公共化 AI 研究計畫」Q 方法陳述句修訂工作。
+      本計畫旨在了解人文社會科學研究者使用生成式 AI 於研究過程中的現況，並特別聚焦於「哪些研究情境適合使用生成式 AI」的專家判斷。此議題攸關各學術社群未來是否以及如何建立生成式 AI 的使用規範，具有重要的學術與實務意義。
+      目前，本計畫已完成第一階段的資料蒐集與主題分析，並根據研究結果擬定 Q 方法陳述句。後續將透過 Q 方法，了解人文社會科學研究者對於生成式 AI 適當使用情境的看法，以及其對各項陳述句的排序結果。
+      在正式實施 Q 方法之前，誠摯邀請各位專家逐一檢視各項陳述句，針對內容、文字表達及適切性提供修正建議，以協助完成正式版 Q 方法陳述句，作為後續研究使用。
+      感謝您的寶貴時間與協助。</p>
+
+      <h2 class="steps-heading">審查步驟</h2>
+      <p>請針對下列每一條陳述句，依序完成性質確認、必要性評分，並視情況填寫修改建議。完成後請點選下方「送出審查結果」，系統會自動送出並同時下載一份 CSV 備份。</p>
+      <div class="steps">
+        <div class="step"><span class="step-num">①</span><strong>性質確認</strong>確認每條陳述句的性質（正向、負向、中性）</div>
+        <div class="step"><span class="step-num">②</span><strong>必要性評分</strong>每條陳述句給予 1–5 分（1 = 非常不必要，5 = 非常必要）</div>
+        <div class="step"><span class="step-num">③</span><strong>無需修改確認</strong>若陳述句無需修改，勾選「無需修改」</div>
+        <div class="step"><span class="step-num">④</span><strong>備註填寫</strong>需修改者請在備註欄輸入建議；無修改則不必填寫</div>
+        <div class="step"><span class="step-num">⑤</span><strong>送出</strong>完成後點選「送出審查結果」，資料將自動送出至研究團隊</div>
+      </div>
+    </section>
+
+    <div id="cardList"></div>
+  </main>
+
+  <div class="export-bar">
+    <div class="export-bar-inner">
+      <div class="export-hint" id="exportHint">尚有陳述句未完成評分</div>
+      <button class="btn-export" id="exportBtn">送出審查結果 ↓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EXPORT MODAL ============ -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal-box">
+    <div class="check-icon" id="modalIcon">✓</div>
+    <h3 id="modalTitle">CSV 已下載完成！</h3>
+    <p id="modalDesc">請將剛才下載的 CSV 檔案寄送給研究者，以便彙整所有專家的意見。</p>
+    <div class="email-row">
+      <span id="researcherEmailInModal"></span>
+      <button id="copyEmailBtn">複製</button>
+    </div>
+    <ul class="modal-steps" id="modalStepsWrap">
+      <li><span class="n">1</span>開啟您的 Email 程式（Gmail、Outlook 等）</li>
+      <li><span class="n">2</span>收件人填入上方地址</li>
+      <li><span class="n">3</span>將下載的 CSV 檔案加入附件</li>
+      <li><span class="n">4</span>送出即完成！</li>
+    </ul>
+    <p class="modal-ack">本研究Q方法陳述句修訂網頁參考長庚大學研究之設計與執行方式，謹此致謝其提供之研究經驗與參考。</p>
+    <div class="modal-actions">
+      <a href="#" class="btn-mailto" id="mailtoBtn">開啟 Email 程式寄送</a>
+      <button class="btn-close-modal" id="closeModalBtn">我已了解，關閉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   設定區：之後要換內容，只要修改這裡即可
+   ========================================================= */
+const RESEARCHER = {
+  name: "清華大學人社AI研究中心執行國科會「探索AI時代的研究新日常」計畫 研究團隊",  // 研究者姓名
+  email: "ai.hss.nthu@gapp.nthu.edu.tw" // 研究者 Email
+};
+
+// Google Apps Script 網頁應用程式 URL。
+// 部署後（見說明文件）將取得的 Web App URL 貼在這裡，例如：
+// "https://script.google.com/macros/s/AKfycb.../exec"
+// 若留空或未修改，系統會自動退回「僅下載 CSV + Email 寄送」的模式。
+const SHEET_WEBAPP_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+// 範例陳述句資料 -- 之後直接替換這個陣列即可
+const STATEMENTS = [
+  { id: 1, text: "人社課程應該增加AI素養教育，且技術訓練與批判視角缺一不可。" },
+  { id: 2, text: "AI相關研究領域，全球南方學者與研究場域嚴重代表性不足。" },
+  { id: 3, text: "目前AI訓練資料偏重英文，學界應投入以在地語言所訓練的模型。" },
+  { id: 4, text: "AI讓沒有程式背景的人社學者也能做資料科學分析，縮小了人文研究與資料科學的落差。" },
+  { id: 5, text: "如果AI能寫出有品質的論文，學者可從書寫轉向提問與設計研究。" },
+  { id: 6, text: "使用AI的費用與技術門檻逐漸高昂，可能造成學術研究資源的嚴重分配不公。" },
+  { id: 7, text: "AI工具降低了分析的技術門檻，讓人文研究者更容易使用資料驅動研究方法" },
+  { id: 8, text: "LLM能取代人工的標注、分類、翻譯任務" },
+  { id: 9, text: "幻覺是大型語言模型無法完全消除的根本限制" },
+  { id: 10, text: "AI無法捕捉文本在其社會脈絡下的深度與複雜性" },
+  { id: 11, text: "專門為學術文獻搜尋所設計的AI，比通用生成式AI更值得研究者信賴" },
+  { id: 12, text: "AI缺乏人類判斷與生活經驗。" },
+  { id: 13, text: "AI無法做到研究的反身性。" },
+  { id: 14, text: "AI摘要文獻只能作為研究起點，引用前必須閱讀原始文獻" },
+  { id: 15, text: "AI模型都內嵌單一世界觀而非多元文化視角，研究者若持續修改提示詞，將有助於識別模型的偏見缺口" },
+  { id: 16, text: "資料科學看似用詳細資料掌握個體特殊性，實則以演算法強化社會中既有的種族、性別與階級之偏誤" },
+  { id: 17, text: "AI在提供文獻資料上容易複製主流觀點，限制了研究的創造性" },
+  { id: 18, text: "AI的侷限性反而驅使研究者精進提問" },
+  { id: 19, text: "研究者必須培養批判性審查AI輸出、辨識幻覺與偏誤" },
+  { id: 20, text: "學術工作使用AI必須揭露使用範疇與目的" },
+  { id: 21, text: "使用AI應揭露所使用的工具、版本、日期與提示詞，使其過程可受檢驗" },
+  { id: 22, text: "學術界應開發工具來偵測AI產出的資料" },
+  { id: 23, text: "現行AI使用規範對作者相對嚴格，卻對審查端較缺乏約束。" },
+  { id: 24, text: "現行AI使用規範應強化作者申訴與救濟管道。" },
+  { id: 25, text: "IRB審查機制應納入AI研究的工具特性與風險。" },
+  { id: 26, text: "若研究涉及人類受試者資料，必須向受試者明確告知且徵求同意如何以AI使用其資料，以及相關限制與風險。" },
+  { id: 27, text: "以AI處理受試者資料前，應去識別化。" },
+  { id: 28, text: "AI技術的發展有加劇資料不平等與剝削原住民社群資料的潛在風險，應建立以人為本的資料治理框架" },
+  { id: 29, text: "AI治理需保護公眾與基本價值" },
+  { id: 30, text: "AI 規範應以自律為主，避免過度規範可能扼殺創新" },
+  { id: 31, text: "過度依賴AI將損害研究者的批判性思維與獨立分析能力" },
+  { id: 32, text: "以AI作為研究工具的規範，應該與以AI作為研究對象有所區別" },
+  { id: 33, text: "學術AI開發應優先選用小型模型，降低資源消耗" },
+  { id: 34, text: "主題模型(topic model)能快速梳理大量文獻，但其輸出仍需由研究者來詮釋" },
+  { id: 35, text: "AI有潛力生成出人意料的連結，可拓寬研究的可能性" },
+  { id: 36, text: "矽基體展現出模擬人類行為的能力，可有效模擬對於研究受試者的部分行為觀測。" },
+  { id: 37, text: "AI代理人可自動化執行部分研究任務。" },
+  { id: 38, text: "質性研究者的主觀偏見有時是相當有價值的部份，未必是應該被AI優化的缺陷。" },
+  { id: 39, text: "研究者缺乏對文本的理解能力，不應完全歸咎於AI。" },
+  { id: 40, text: "AI研究中的公開資料中如涉及個人側寫（profiling），應考慮適用受試者保護原則。" },
+  { id: 41, text: "期刊編輯在面對有AI生成疑慮的稿件時，難以直接用AI偵測結果作為可靠的判斷依據。" },
+  { id: 42, text: "培養學者學術自律，遠比事後防弊更爲重要。" },
+  { id: 43, text: "AI相關學術倫理是當代學者必修課。" },
+  { id: 44, text: "LLM能使研究者得以直接以文字或圖像查詢史料的視覺內容" },
+  { id: 45, text: "LLM可作為歷史理論的實驗平台，藉由讓AI依照理論假設撰寫虛擬的歷史發展，接著觀察其結果和實際史學著作的差異。" },
+  { id: 46, text: "以LLM處理口述歷史材料時，絕不可更動受訪者的原始話語，必須完整保留。" },
+  { id: 47, text: "歷史學者可受惠於AI驅動的手寫辨識工具，同時也讓資料科學領域獲得豐富的史料。" },
+  { id: 48, text: "歷史研究使用AI工具應揭露所用程式、演算法版本與參數設定，因為這些因素可能影響研究結論" },
+  { id: 49, text: "面對AI帶來的風險，期刊審查人的AI素養比以往更加關鍵" },
+  { id: 50, text: "歷史學者應建立與AI互動過程的存檔機制，使研究的每個環節都能接受同行檢驗" },
+  { id: 51, text: "以AI大量擷取出版品應獲得授權才能建立研究資料庫" },
+  { id: 52, text: "歷史學者如果過度依賴AI對於文本的解釋，可能會削弱自身發掘文本隱含的意涵之關鍵能力" },
+  { id: 53, text: "AI在訓練資料不足時，會用相似詞填補，將容易扭曲非主流與偏向在地的歷史議題或解釋" },
+  { id: 54, text: "歷史學門應儘速制定如何使用AI及揭露程度的學術倫理規範。" },
+  { id: 55, text: "AI訓練資料的授權問題，應該在輸入AI之前就處理完畢。" },
+];
+
+/* =========================================================
+   狀態管理
+   ========================================================= */
+let expertName = "";
+// responses[id] = { nature, necessity, noEdit, remark }
+const responses = {};
+STATEMENTS.forEach(s => { responses[s.id] = { nature: null, necessity: null, noEdit: false, remark: "" }; });
+
+/* =========================================================
+   DOM refs
+   ========================================================= */
+const loginScreen = document.getElementById('loginScreen');
+const appScreen = document.getElementById('appScreen');
+const expertNameInput = document.getElementById('expertNameInput');
+const loginBtn = document.getElementById('loginBtn');
+const expertNameDisplay = document.getElementById('expertNameDisplay');
+const cardList = document.getElementById('cardList');
+const statTotal = document.getElementById('statTotal');
+const statRated = document.getElementById('statRated');
+const statPending = document.getElementById('statPending');
+const statPct = document.getElementById('statPct');
+const exportHint = document.getElementById('exportHint');
+const exportBtn = document.getElementById('exportBtn');
+const exportModal = document.getElementById('exportModal');
+const modalIcon = document.getElementById('modalIcon');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const modalStepsWrap = document.getElementById('modalStepsWrap');
+const researcherEmailInModal = document.getElementById('researcherEmailInModal');
+const copyEmailBtn = document.getElementById('copyEmailBtn');
+const mailtoBtn = document.getElementById('mailtoBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const progressFill = document.getElementById('progressFill');
+const progressCount = document.getElementById('progressCount');
+
+researcherEmailInModal.textContent = RESEARCHER.email;
+
+/* =========================================================
+   登入
+   ========================================================= */
+function tryLogin(){
+  const val = expertNameInput.value.trim();
+  if(!val){ expertNameInput.focus(); return; }
+  expertName = val;
+  expertNameDisplay.textContent = expertName;
+  loginScreen.style.display = 'none';
+  appScreen.style.display = 'block';
+  renderCards();
+  updateStats();
+}
+loginBtn.addEventListener('click', tryLogin);
+expertNameInput.addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+/* =========================================================
+   卡片渲染
+   ========================================================= */
+const NECESSITY_TAGS = {1:"非常不必要",2:"不必要",3:"普通",4:"必要",5:"非常必要"};
+const NATURE_LABELS = { positive:"正向", negative:"負向", neutral:"中性" };
+
+function renderCards(){
+  const GROUP_SIZE = 5;
+  let html = '';
+  STATEMENTS.forEach((s, i) => {
+    if(i % GROUP_SIZE === 0){
+      const start = i + 1;
+      const end = Math.min(i + GROUP_SIZE, STATEMENTS.length);
+      html += `
+      <div class="group-divider">
+        <span class="label">第 ${start}–${end} 句</span>
+        <span class="line"></span>
+      </div>`;
+    }
+    html += cardTemplate(s);
+  });
+  cardList.innerHTML = html;
+  STATEMENTS.forEach(s => bindCardEvents(s.id));
+}
+
+function cardTemplate(s){
+  return `
+  <article class="card" id="card-${s.id}" data-id="${s.id}">
+    <div class="card-head">
+      <div class="card-index mono">${String(s.id).padStart(2,'0')}</div>
+      <div class="card-text">${escapeHtml(s.text)}</div>
+    </div>
+
+    <div class="field-block">
+      <span class="row-label">① 性質確認</span>
+      <div class="pill-group" data-role="nature-group">
+        <button type="button" class="pill" data-val="positive">正向</button>
+        <button type="button" class="pill" data-val="negative">負向</button>
+        <button type="button" class="pill" data-val="neutral">中性</button>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <span class="row-label">② 必要性評分（1 = 非常不必要，5 = 非常必要）</span>
+      <div class="necessity-scale" data-role="necessity-group">
+        <div class="track"></div>
+        ${[1,2,3,4,5].map(n => `
+          <div class="necessity-dot-wrap" data-val="${n}">
+            <div class="necessity-dot mono">${n}</div>
+            <div class="necessity-tag">${NECESSITY_TAGS[n]}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="field-block">
+      <label class="noedit-row" data-role="noedit-row">
+        <input type="checkbox" data-role="noedit-checkbox">
+        <span>③ 此陳述句無需修改</span>
+      </label>
+    </div>
+
+    <div class="field-block">
+      <span class="row-label">④ 備註（需修改者請輸入建議，無修改則不必填寫）</span>
+      <textarea class="remark" data-role="remark" placeholder="請輸入修改建議……"></textarea>
+    </div>
+  </article>`;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* =========================================================
+   卡片事件綁定
+   ========================================================= */
+function bindCardEvents(id){
+  const card = document.getElementById(`card-${id}`);
+  const r = responses[id];
+
+  // 性質 pills
+  const natureBtns = card.querySelectorAll('[data-role="nature-group"] .pill');
+  natureBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      r.nature = btn.dataset.val;
+      natureBtns.forEach(b => b.classList.toggle('active', b === btn));
+      onCardChange(id);
+    });
+  });
+
+  // 必要性 dots
+  const dots = card.querySelectorAll('[data-role="necessity-group"] .necessity-dot-wrap');
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      r.necessity = parseInt(dot.dataset.val, 10);
+      dots.forEach(d => d.classList.toggle('active', d === dot));
+      onCardChange(id);
+    });
+  });
+
+  // 無需修改 checkbox
+  const noEditRow = card.querySelector('[data-role="noedit-row"]');
+  const noEditCheckbox = card.querySelector('[data-role="noedit-checkbox"]');
+  const remarkBox = card.querySelector('[data-role="remark"]');
+  noEditCheckbox.addEventListener('change', () => {
+    r.noEdit = noEditCheckbox.checked;
+    noEditRow.classList.toggle('checked', r.noEdit);
+    remarkBox.disabled = r.noEdit;
+    if(r.noEdit){ remarkBox.value = ''; r.remark = ''; }
+    onCardChange(id);
+  });
+
+  // 備註
+  remarkBox.addEventListener('input', () => {
+    r.remark = remarkBox.value;
+  });
+}
+
+function onCardChange(id){
+  const card = document.getElementById(`card-${id}`);
+  const r = responses[id];
+  const complete = !!(r.nature && r.necessity);
+  card.classList.toggle('is-complete', complete);
+  card.classList.toggle('is-pending', !complete);
+  updateStats();
+}
+
+/* =========================================================
+   進度統計
+   ========================================================= */
+function updateStats(){
+  const total = STATEMENTS.length;
+  const rated = STATEMENTS.filter(s => responses[s.id].nature && responses[s.id].necessity).length;
+  const pending = total - rated;
+  const pct = total === 0 ? 0 : Math.round((rated/total)*100);
+
+  statTotal.textContent = total;
+  statRated.textContent = rated;
+  statPending.textContent = pending;
+  statPct.textContent = pct + '%';
+
+  progressFill.style.width = pct + '%';
+  progressFill.classList.toggle('is-full', pct === 100);
+  progressCount.textContent = `${rated} / ${total}`;
+
+  exportHint.textContent = pending === 0
+    ? '所有陳述句皆已完成評分，可以送出囉！'
+    : `尚有 ${pending} 條陳述句未完成評分`;
+}
+
+/* =========================================================
+   CSV 匯出（本機備份）
+   ========================================================= */
+function buildCsv(){
+  const headers = ['專家姓名','編號','陳述句內容','性質','必要性評分','無需修改','備註'];
+  const rows = STATEMENTS.map(s => {
+    const r = responses[s.id];
+    return [
+      expertName,
+      s.id,
+      s.text,
+      r.nature ? NATURE_LABELS[r.nature] : '',
+      r.necessity ?? '',
+      r.noEdit ? '是' : '否',
+      r.remark || ''
+    ];
+  });
+  const csvLines = [headers, ...rows].map(row =>
+    row.map(csvEscape).join(',')
+  );
+  return '\uFEFF' + csvLines.join('\r\n'); // BOM for Excel 中文相容
+}
+
+function csvEscape(val){
+  const s = String(val ?? '');
+  if(/[",\n]/.test(s)){
+    return '"' + s.replace(/"/g,'""') + '"';
+  }
+  return s;
+}
+
+function downloadCsv(){
+  const csv = buildCsv();
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeExpert = expertName.replace(/[^\w\u4e00-\u9fa5]+/g,'_');
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `Q方法陳述句審查_${safeExpert}_${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* =========================================================
+   後台送出（Google Sheets via Apps Script）
+   ========================================================= */
+function isBackendConfigured(){
+  return !!SHEET_WEBAPP_URL && !SHEET_WEBAPP_URL.includes('PASTE_YOUR');
+}
+
+async function submitToSheet(){
+  if(!isBackendConfigured()){
+    return { ok:false, reason:'not_configured' };
+  }
+  const payload = {
+    expertName,
+    submittedAt: new Date().toISOString(),
+    statements: STATEMENTS.map(s => {
+      const r = responses[s.id];
+      return {
+        id: s.id,
+        text: s.text,
+        nature: r.nature ? NATURE_LABELS[r.nature] : '',
+        necessity: r.necessity ?? '',
+        noEdit: r.noEdit ? '是' : '否',
+        remark: r.remark || ''
+      };
+    })
+  };
+  try{
+    // 使用 text/plain 避免瀏覽器送出 CORS 預檢請求（Apps Script 不需要處理 OPTIONS）
+    const res = await fetch(SHEET_WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) return { ok:false, reason:'http_error' };
+    let data = {};
+    try{ data = await res.json(); }catch(_e){ /* 若無法解析也視為成功送達 */ }
+    if(data && data.status === 'error'){
+      return { ok:false, reason: data.message || 'server_error' };
+    }
+    return { ok:true };
+  }catch(err){
+    return { ok:false, reason:'network_error' };
+  }
+}
+
+/* =========================================================
+   送出前檢查：擋下未完成評分就送出
+   ========================================================= */
+function getFirstIncompleteId(){
+  for(const s of STATEMENTS){
+    const r = responses[s.id];
+    if(!(r.nature && r.necessity)) return s.id;
+  }
+  return null;
+}
+
+function blockIncompleteSubmit(id){
+  exportHint.textContent = '尚有陳述句未完成評分，請完成後再送出';
+  exportHint.classList.add('is-error');
+  setTimeout(() => {
+    exportHint.classList.remove('is-error');
+    updateStats();
+  }, 2500);
+
+  const card = document.getElementById(`card-${id}`);
+  if(card){
+    card.scrollIntoView({ behavior:'smooth', block:'center' });
+    card.classList.add('flash-incomplete');
+    setTimeout(() => card.classList.remove('flash-incomplete'), 1400);
+  }
+}
+
+/* =========================================================
+   送出流程
+   ========================================================= */
+exportBtn.addEventListener('click', async () => {
+  const firstIncomplete = getFirstIncompleteId();
+  if(firstIncomplete !== null){
+    blockIncompleteSubmit(firstIncomplete);
+    return;
+  }
+
+  const originalLabel = exportBtn.textContent;
+  exportBtn.disabled = true;
+  exportBtn.textContent = '送出中...';
+
+  const result = await submitToSheet();
+  downloadCsv();
+
+  exportBtn.disabled = false;
+  exportBtn.textContent = originalLabel;
+  openExportModal(result);
+});
+
+/* =========================================================
+   Modal
+   ========================================================= */
+function openExportModal(result){
+  exportModal.classList.add('show');
+  const subject = encodeURIComponent(`Q方法陳述句審查回覆 - ${expertName}`);
+  const body = encodeURIComponent(`${RESEARCHER.name} 您好，\n\n附上我的 Q 方法陳述句審查結果 CSV 檔案，請查收。\n\n${expertName} 敬上`);
+  mailtoBtn.href = `mailto:${RESEARCHER.email}?subject=${subject}&body=${body}`;
+
+  if(result.ok){
+    modalIcon.textContent = '✓';
+    modalIcon.classList.remove('is-warn');
+    modalTitle.textContent = '送出成功！';
+    modalDesc.textContent = '您的審查資料已自動送出至研究團隊的資料庫，系統也已下載一份 CSV 備份至您的電腦。若您想另外寄送備份，也可使用下方的 Email 選項（非必要）。';
+    modalStepsWrap.style.display = 'none';
+  } else if(result.reason === 'not_configured'){
+    modalIcon.textContent = '✓';
+    modalIcon.classList.remove('is-warn');
+    modalTitle.textContent = 'CSV 已下載完成！';
+    modalDesc.textContent = `請將剛才下載的 CSV 檔案寄送給研究者 ${RESEARCHER.name}，以便彙整所有專家的意見。`;
+    modalStepsWrap.style.display = '';
+  } else {
+    modalIcon.textContent = '!';
+    modalIcon.classList.add('is-warn');
+    modalTitle.textContent = '自動送出未成功';
+    modalDesc.textContent = 'CSV 已下載完成，但自動送出至系統時發生問題，請改用下方 Email 方式將 CSV 檔案寄送給研究者，謝謝您的協助！';
+    modalStepsWrap.style.display = '';
+  }
+}
+closeModalBtn.addEventListener('click', () => exportModal.classList.remove('show'));
+exportModal.addEventListener('click', e => { if(e.target === exportModal) exportModal.classList.remove('show'); });
+
+copyEmailBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(RESEARCHER.email).then(() => {
+    const original = copyEmailBtn.textContent;
+    copyEmailBtn.textContent = '已複製';
+    setTimeout(() => copyEmailBtn.textContent = original, 1500);
+  });
+});
+</script>
+</body>
+</html>
