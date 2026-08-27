@@ -304,13 +304,26 @@
     gap:14px;
   }
   .step{font-size:14px; color:var(--ink-soft); line-height:1.6;}
+  .step-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:22px;
+    height:20px;
+    padding:0 6px;
+    border-radius:5px;
+    background:var(--ink);
+    color:var(--paper-raised);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    vertical-align:middle;
+    flex-shrink:0;
+  }
   .step .step-num{
-    font-family:'Source Serif 4',serif;
-    font-size:19px;
-    color:var(--red);
-    font-weight:600;
     display:block;
-    margin-bottom:4px;
+    margin-bottom:6px;
   }
   .step strong{display:block; color:var(--ink); font-weight:600; margin-bottom:2px;}
 
@@ -456,9 +469,9 @@
     cursor:pointer;
   }
   .noedit-row input{width:17px;height:17px; accent-color:var(--teal); flex-shrink:0;}
-  .noedit-row span{font-size:14px; color:var(--ink-soft);}
+  .noedit-row .noedit-label{font-size:14px; color:var(--ink-soft);}
   .noedit-row.checked{background:var(--teal-soft); border-color:var(--teal);}
-  .noedit-row.checked span{color:var(--teal); font-weight:600;}
+  .noedit-row.checked .noedit-label{color:var(--teal); font-weight:600;}
 
   textarea.remark{
     width:100%;
@@ -680,11 +693,11 @@
       <h2 class="steps-heading">審查步驟</h2>
       <p>請針對下列每一條陳述句，依序完成性質確認、必要性評分，並視情況填寫修改建議。完成後請點選下方「送出審查結果」，系統會自動送出並同時下載一份 CSV 備份。</p>
       <div class="steps">
-        <div class="step"><span class="step-num">①</span><strong>性質確認</strong>確認每條陳述句的性質（正向、負向、中性）</div>
-        <div class="step"><span class="step-num">②</span><strong>必要性評分</strong>每條陳述句給予 1–5 分（1 = 非常不必要，5 = 非常必要）</div>
-        <div class="step"><span class="step-num">③</span><strong>無需修改確認</strong>若陳述句無需修改，勾選「無需修改」</div>
-        <div class="step"><span class="step-num">④</span><strong>備註填寫</strong>需修改者請在備註欄輸入建議；無修改則不必填寫</div>
-        <div class="step"><span class="step-num">⑤</span><strong>送出</strong>完成後點選「送出審查結果」，資料將自動送出至研究團隊</div>
+        <div class="step"><span class="step-num"><span class="step-badge">1</span></span><strong>性質確認</strong>確認每條陳述句的性質（正向、負向、中性）</div>
+        <div class="step"><span class="step-num"><span class="step-badge">2</span></span><strong>必要性評分</strong>每條陳述句給予 1–5 分（1 = 非常不必要，5 = 非常必要）</div>
+        <div class="step"><span class="step-num"><span class="step-badge">3</span></span><strong>無需修改確認</strong>若陳述句無需修改，勾選「無需修改」</div>
+        <div class="step"><span class="step-num"><span class="step-badge">4</span></span><strong>備註填寫</strong>需修改者請在備註欄輸入建議；無修改則不必填寫</div>
+        <div class="step"><span class="step-num"><span class="step-badge">5</span></span><strong>送出</strong>完成後點選「送出審查結果」，資料將自動送出至研究團隊</div>
       </div>
     </section>
 
@@ -884,7 +897,7 @@ function cardTemplate(s){
     </div>
 
     <div class="field-block">
-      <span class="row-label">① 性質確認</span>
+      <span class="row-label"><span class="step-badge">1</span> 性質確認</span>
       <div class="pill-group" data-role="nature-group">
         <button type="button" class="pill" data-val="positive">正向</button>
         <button type="button" class="pill" data-val="negative">負向</button>
@@ -893,7 +906,7 @@ function cardTemplate(s){
     </div>
 
     <div class="field-block">
-      <span class="row-label">② 必要性評分（1 = 非常不必要，5 = 非常必要）</span>
+      <span class="row-label"><span class="step-badge">2</span> 必要性評分（1 = 非常不必要，5 = 非常必要）</span>
       <div class="necessity-scale" data-role="necessity-group">
         <div class="track"></div>
         ${[1,2,3,4,5].map(n => `
@@ -907,12 +920,12 @@ function cardTemplate(s){
     <div class="field-block">
       <label class="noedit-row" data-role="noedit-row">
         <input type="checkbox" data-role="noedit-checkbox">
-        <span>③ 此陳述句無需修改</span>
+        <span class="noedit-label"><span class="step-badge">3</span> 此陳述句無需修改</span>
       </label>
     </div>
 
     <div class="field-block">
-      <span class="row-label">④ 備註（需修改者請輸入建議，無修改則不必填寫）</span>
+      <span class="row-label"><span class="step-badge">4</span> 備註（需修改者請輸入建議，無修改則不必填寫）</span>
       <textarea class="remark" data-role="remark" placeholder="請輸入修改建議……"></textarea>
     </div>
   </article>`;
