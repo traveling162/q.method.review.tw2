@@ -723,14 +723,12 @@
       <button id="copyEmailBtn">複製</button>
     </div>
     <ul class="modal-steps" id="modalStepsWrap">
-      <li><span class="n">1</span>開啟您的 Email 程式（Gmail、Outlook 等）</li>
-      <li><span class="n">2</span>收件人填入上方地址</li>
-      <li><span class="n">3</span>將下載的 CSV 檔案加入附件</li>
-      <li><span class="n">4</span>送出即完成！</li>
+      <li><span class="n">1</span>收件人填入上方地址</li>
+      <li><span class="n">2</span>將下載的 CSV 檔案加入附件</li>
+      <li><span class="n">3</span>送出即完成！</li>
     </ul>
     <p class="modal-ack">本研究Q方法陳述句修訂網頁參考長庚大學研究之設計與執行方式，謹此致謝其提供之研究經驗與參考。</p>
     <div class="modal-actions">
-      <a href="#" class="btn-mailto" id="mailtoBtn">開啟 Email 程式寄送</a>
       <button class="btn-close-modal" id="closeModalBtn">我已了解，關閉</button>
     </div>
   </div>
@@ -840,7 +838,6 @@ const modalDesc = document.getElementById('modalDesc');
 const modalStepsWrap = document.getElementById('modalStepsWrap');
 const researcherEmailInModal = document.getElementById('researcherEmailInModal');
 const copyEmailBtn = document.getElementById('copyEmailBtn');
-const mailtoBtn = document.getElementById('mailtoBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const progressFill = document.getElementById('progressFill');
 const progressCount = document.getElementById('progressCount');
@@ -1159,15 +1156,12 @@ exportBtn.addEventListener('click', async () => {
    ========================================================= */
 function openExportModal(result){
   exportModal.classList.add('show');
-  const subject = encodeURIComponent(`Q方法陳述句審查回覆 - ${expertName}`);
-  const body = encodeURIComponent(`${RESEARCHER.name} 您好，\n\n附上我的 Q 方法陳述句審查結果 CSV 檔案，請查收。\n\n${expertName} 敬上`);
-  mailtoBtn.href = `mailto:${RESEARCHER.email}?subject=${subject}&body=${body}`;
 
   if(result.ok){
     modalIcon.textContent = '✓';
     modalIcon.classList.remove('is-warn');
     modalTitle.textContent = '送出成功！';
-    modalDesc.textContent = '您的審查資料已自動送出至研究團隊的資料庫，系統也已下載一份 CSV 備份至您的電腦。若您想另外寄送備份，也可使用下方的 Email 選項（非必要）。';
+    modalDesc.textContent = '您的審查資料已自動送出至研究團隊的資料庫，系統也已下載一份 CSV 備份至您的電腦。';
     modalStepsWrap.style.display = 'none';
   } else if(result.reason === 'not_configured'){
     modalIcon.textContent = '✓';
@@ -1179,7 +1173,7 @@ function openExportModal(result){
     modalIcon.textContent = '!';
     modalIcon.classList.add('is-warn');
     modalTitle.textContent = '自動送出未成功';
-    modalDesc.textContent = 'CSV 已下載完成，但自動送出至系統時發生問題，請改用下方 Email 方式將 CSV 檔案寄送給研究者，謝謝您的協助！';
+    modalDesc.textContent = 'CSV 已下載完成，但自動送出至系統時發生問題，請將下載的 CSV 檔案寄送給研究者，謝謝您的協助！';
     modalStepsWrap.style.display = '';
   }
 }
